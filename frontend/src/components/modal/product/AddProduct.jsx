@@ -13,8 +13,11 @@ import {
 import PropTypes from "prop-types";
 
 import "./AddProduct.css";
+import { LoadingButton } from "@mui/lab";
 
-const AddProductModal = ({ isOpen, onClose }) => {
+import {currencies, types, units} from '../../../constants'
+
+const AddProductModal = ({ isOpen, onClose, addItem}) => {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("IDR");
@@ -22,59 +25,7 @@ const AddProductModal = ({ isOpen, onClose }) => {
   const [type, setType] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("pcs");
-
-  const currencies = [
-    {
-      value: "IDR",
-      label: "Rp",
-    },
-    {
-      value: "USD",
-      label: "$",
-    },
-    {
-      value: "EUR",
-      label: "€",
-    },
-  ];
-
-  const types = [
-    {
-      value: "",
-      label: "None",
-    },
-    {
-      value: "automotive",
-      label: "Automotive",
-    },
-    {
-      value: "electronic",
-      label: "Electronic",
-    },
-    {
-      value: "fashion",
-      label: "Fashion",
-    },
-    {
-      value: "kids",
-      label: "Kids",
-    },
-  ];
-
-  const units = [
-    {
-      value: "pcs",
-      label: "pcs",
-    },
-    {
-      value: "kg",
-      label: "kg",
-    },
-    {
-      value: "g",
-      label: "g",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
 
   const handleAddProduct = () => {
     const newProduct = {
@@ -87,8 +38,6 @@ const AddProductModal = ({ isOpen, onClose }) => {
       unit: unit,
     };
 
-    console.log(newProduct);
-
     onSubmit(newProduct);
 
     // Reset the form inputs
@@ -100,8 +49,9 @@ const AddProductModal = ({ isOpen, onClose }) => {
   };
 
   const onSubmit = async (data) => {
+    setLoading(true)
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + "/products", {
+      const response = await fetch(import.meta.env.VITE_MOCK_API + "products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,16 +60,20 @@ const AddProductModal = ({ isOpen, onClose }) => {
       });
 
       if (response.ok) {
-        alert("Successfully add new product");
         // setProduct([...product, data]);
+        handleClose();
+        addItem(true);
       } else {
         // Handle error response here if needed
+        addItem(false);
         alert("Error sending product data to the API");
       }
-      onClose(true);
     } catch (error) {
       // Handle any network errors or other issues
+      addItem(false);
       alert("Error sending product data:", error);
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -127,9 +81,9 @@ const AddProductModal = ({ isOpen, onClose }) => {
     return null;
   }
 
-  const handleClose = () => {
+  const handleClose = (event, reason) => {
     //setOpen(false);
-    onClose(false);
+    onClose(event, reason);
   };
 
   const validation = (text) => text.length < 1;
@@ -285,13 +239,14 @@ const AddProductModal = ({ isOpen, onClose }) => {
             <Button variant="outlined" onClick={handleClose}>
               Cancel
             </Button>
-            <Button
+            <LoadingButton
+              loading={loading}
               variant="contained"
-              onClick={handleAddProduct}
+              onClick={() => handleAddProduct()}
               disabled={isValid}
             >
               Submit
-            </Button>
+            </LoadingButton>
           </DialogActions>
         </DialogContent>
       </Dialog>
@@ -302,6 +257,8 @@ const AddProductModal = ({ isOpen, onClose }) => {
 AddProductModal.propTypes = {
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
+  addItem: PropTypes.func,
+  currencies: PropTypes.array
 };
 
 export default AddProductModal;

@@ -20,6 +20,14 @@ import {
   TableContainer,
   TablePagination,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Box,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 // components
 // import Label from "../components/label";
@@ -33,6 +41,7 @@ import SimpleBarReact from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import AddProductModal from "../components/modal/product/AddProduct";
 import EditProduct from "../components/modal/product/Edit";
+import { LoadingButton } from "@mui/lab";
 
 const TABLE_HEAD = [
   { id: "code", label: "Code", alignRight: false },
@@ -98,23 +107,23 @@ export default function UserPage() {
 
   const [editModal, setEditModal] = useState(false);
 
+  const [deleteModal, setDeleteModal] = useState(false);
+
   const [edit, setEdit] = useState({});
 
   const [loading, setLoading] = useState(true);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const [alertState, setAlertState] = useState({
+    type: "success",
+    message: "",
+    show: false,
+  });
 
   useEffect(() => {
     console.log("useEffect");
     console.log(import.meta.env);
-    setLoading(true);
-    axios
-      .get(import.meta.env.VITE_MOCK_API + "products")
-      .then((response) => {
-        setProduct(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    getProducts();
   }, []);
 
   const handleOpenMenu = (event) => {
@@ -123,6 +132,51 @@ export default function UserPage() {
 
   const handleCloseMenu = () => {
     setOpen(null);
+  };
+
+  const handleCloseModal = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+    if (!reason) {
+      showAlert({
+        type: "success",
+        message: "Adding data successful!",
+      });
+    }
+    setShowModal(false);
+  };
+
+  const showAlert = ({ type, message }) => {
+    setAlertState({ show: true, type: type, message: message });
+
+    setTimeout(() => {
+      setAlertState({ ...alertState, show: false });
+    }, 2000);
+  };
+
+  const handleCloseEdit = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+
+      if (!reason) {
+        showAlert({
+          type: "success",
+          message: "Editing data successful!",
+        });
+      }
+    setEditModal(false);
+  };
+
+  const handleCloseDelete = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+    setDeleteModal(false);
   };
 
   const handleRequestSort = (event, property) => {
@@ -138,6 +192,20 @@ export default function UserPage() {
       return;
     }
     setSelected([]);
+  };
+
+  const getProducts = () => {
+    setLoading(true);
+    axios
+      .get(import.meta.env.VITE_MOCK_API + "products")
+      .then((response) => {
+        setProduct(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   const handleClick = (event, name) => {
@@ -181,9 +249,35 @@ export default function UserPage() {
     setOpen(null);
   };
 
-  const handleDelete = () => {
-    setEditModal(!editModal);
-    setOpen(null);
+  const submitDelete = () => {
+    setLoadingDelete(true);
+    axios
+      .delete(import.meta.env.VITE_MOCK_API + "products/" + edit?.id)
+      .then(() => {
+        setLoadingDelete(false);
+        handleCloseDelete();
+        showAlert({
+          type:'success',
+          message: "Successfully delete data !"
+        })
+        getProducts();
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoadingDelete(false);
+      });
+  };
+
+  const handleOpenDelete = () => {
+    handleOpenMenu(false);
+    setDeleteModal(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlertState({...alertState, show: false});
   };
 
   const emptyRows =
@@ -202,6 +296,12 @@ export default function UserPage() {
       <Helmet>
         <title> Product | InventoryHub </title>
       </Helmet>
+
+      <Snackbar open={alertState.show} autoHideDuration={4000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <Alert onClose={handleCloseSnackbar} severity={alertState.type} sx={{ width: '100%' }}>
+          {alertState.message}
+        </Alert>
+      </Snackbar>
 
       <Container>
         <Stack
@@ -247,7 +347,7 @@ export default function UserPage() {
 
                 {loading ? (
                   <TableBody>
-                    <TableCell align="center" colSpan={6} sx={{py: 6, my:6}}>
+                    <TableCell align="center" colSpan={6} sx={{ py: 6, my: 6 }}>
                       <CircularProgress size={30} />
                     </TableCell>
                   </TableBody>
@@ -259,9 +359,9 @@ export default function UserPage() {
                         page * rowsPerPage + rowsPerPage
                       )
                       ?.map((row) => {
-                        const { id, code, name, price, type, quantity } = row;
+                        const { id, code, name, price, type, quantity, unit } =
+                          row;
                         const selectedProduct = selected.indexOf(id) !== -1;
-
                         return (
                           <TableRow
                             hover
@@ -279,7 +379,9 @@ export default function UserPage() {
                             <TableCell align="left">{code}</TableCell>
                             <TableCell align="left">{name}</TableCell>
                             <TableCell align="left">{price}</TableCell>
-                            <TableCell align="left">{quantity}</TableCell>
+                            <TableCell align="left">
+                              {quantity} {unit}
+                            </TableCell>
                             <TableCell align="left">{type}</TableCell>
 
                             <TableCell align="right">
@@ -304,7 +406,7 @@ export default function UserPage() {
                     )}
                   </TableBody>
                 )}
-                {(isNotFound && !loading) && (
+                {isNotFound && !loading && (
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
@@ -329,7 +431,7 @@ export default function UserPage() {
                   </TableBody>
                 )}
 
-                {(product.length == 0 && !loading) && (
+                {product.length == 0 && !loading && (
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
@@ -370,13 +472,51 @@ export default function UserPage() {
       </Container>
 
       {/* Modal */}
-      <AddProductModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <AddProductModal
+        isOpen={showModal}
+        onClose={(event, reason) => handleCloseModal(event, reason)}
+        addItem={() => getProducts()}
+      />
 
       <EditProduct
         isOpen={editModal}
-        onClose={() => setEditModal(false)}
+        onClose={(event, reason) => handleCloseEdit(event, reason)}
         data={edit}
+        editItem={() => getProducts()}
       />
+
+      <Dialog
+        open={deleteModal}
+        onClose={(event, reason) => handleCloseDelete(event, reason)}
+        maxWidth="xs"
+        fullWidth
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Product"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You want to delete <b>{edit?.name}</b> <br />
+            This action is{" "}
+            <Box component="span" sx={{ color: "error.main" }}>
+              irreversible
+            </Box>
+            .
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <LoadingButton
+            loading={loadingDelete}
+            variant="contained"
+            color="error"
+            onClick={() => submitDelete()}
+            autoFocus
+          >
+            Delete
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
 
       <Popover
         open={Boolean(open)}
@@ -407,7 +547,7 @@ export default function UserPage() {
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: "error.main" }} onClick={handleDelete}>
+        <MenuItem sx={{ color: "error.main" }} onClick={handleOpenDelete}>
           <Iconify icon={"eva:trash-2-outline"} sx={{ mr: 2 }} />
           Delete
         </MenuItem>

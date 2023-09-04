@@ -5,125 +5,96 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Box,
+  Grid,
+  TextField,
+  MenuItem,
   // TextField,
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-// import "./Edit.css";
+import { currencies, types, units } from "../../../constants";
+import { LoadingButton } from "@mui/lab";
 
-const onSubmit = async (data) => {
-  console.log(data)
-  try {
-    // Make the API request to send the product data
-    const response = await fetch(
-      import.meta.env.VITE_API_URL+"/products/edit/" + data?.id,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (response.ok) {
-      // If the API call is successful, add the product to the state
-      alert("Successfully add new product");
-      // setProduct([...product, data]);
-    } else {
-      // Handle error response here if needed
-      alert("Error sending product data to the API");
-    }
-    // setShowModal(false);
-  } catch (error) {
-    // Handle any network errors or other issues
-    alert("Error sending product data:", error);
-  }
-
-  // Close the modal after submitting the form
-  // setProducts([...products, product]);
-};
-
-const EditProduct = ({ isOpen, onClose, data }) => {
-  // const [code, setCode] = useState("");
-  // const [name, setName] = useState("");
-  // const [price, setPrice] = useState("");
-  // const [type, setType] = useState("");
-  // const [quantity, setQuantity] = useState("");
-
+const EditProduct = ({ isOpen, onClose, data, editItem }) => {
   const [fullWidth] = useState(true);
   const [maxWidth] = useState("sm");
 
+  const [loading, setLoading] = useState(false);
   const [editedData, setEditedData] = useState(data);
 
   useEffect(() => {
     setEditedData(data);
   }, [data]);
 
-  // console.log(data)
-  // setCode(data?.code)
-
-  // const handleCodeChange = (e) => {
-  //   setCode(e.target.value);
-  // };
-
-  // const handleProductNameChange = (e) => {
-  //   setName(e.target.value);
-  // };
-
-  // const handlePriceChange = (e) => {
-  //   setPrice(e.target.value);
-  // };
-
-  // const handleQuantityChange = (e) => {
-  //   setQuantity(e.target.value);
-  // };
-
-  // const handleTypeChange = (e) => {
-  //   setType(e.target.value);
-  // };
-// const setData = ()=>{
-//   setEditedData(data)
-// }
-
   const handleInput = (e) => {
     const { name, value } = e.target;
+    console.log(e.target.name);
+    console.log(e.target.value);
+    console.log(name, value);
     setEditedData((data) => ({
       ...data,
       [name]: value,
     }));
-    // console.log({ code, name, price, type, quantity });
-    // setEditedData({ code, name, price, type, quantity })
   };
 
-  const handleAddProduct = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    // if (!code || !name || !price || !type || !quantity) {
-    //   alert("Please filled all required field");
-    //   return;
-    // }
-
+    console.log(editedData);
     onSubmit(editedData);
-
-    // Reset the form inputs
-    // setCode("");
-    // setName("");
-    // setPrice("");
-    // setType("");
-    // setQuantity("");
-
-    onClose(true);
   };
 
   if (!isOpen) {
     return null;
   }
 
-  const handleClose = () => {
-    //setOpen(false);
-    onClose(false);
+  const onSubmit = async (data) => {
+    console.log(data);
+    setLoading(true);
+    try {
+      // Make the API request to send the product data
+      const response = await fetch(
+        import.meta.env.VITE_MOCK_API + "/products/" + data?.id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editedData),
+        }
+      );
+
+      if (response.ok) {
+        // If the API call is successful, add the product to the state
+        editItem(true);
+        handleClose();
+        // setProduct([...product, data]);
+      } else {
+        // Handle error response here if needed
+        editItem(false);
+        alert("Error sending product data to the API");
+      }
+    } catch (error) {
+      // Handle any network errors or other issues
+      editItem(false);
+      alert("Error sending product data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleClose = (event, reason) => {
+    onClose(event, reason);
+  };
+
+  const validation = (text) => text.length < 1;
+
+  const isValid =
+    validation(editedData.code) ||
+    validation(editedData.name) ||
+    validation(editedData.price) ||
+    validation(editedData.type) ||
+    validation(editedData.quantity);
 
   return (
     <>
@@ -135,80 +106,147 @@ const EditProduct = ({ isOpen, onClose, data }) => {
       >
         <DialogTitle>Edit Product</DialogTitle>
         <DialogContent>
-          <div className="field">
-            <label className="label">Product Code</label>
-            <div className="control">
-              <input
-                className="input"
-                name="code"
-                type="text"
-                defaultValue={editedData.code ? editedData.code : data.code}
-                value={editedData.code}
-                onChange={handleInput}
-              />
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Product Name</label>
-            <div className="control">
-              <input
-                className="input"
-                name="name"
-                type="text"
-                defaultValue={data?.name}
-                value={editedData?.name}
-                onChange={handleInput}
-              />
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Price</label>
-            <div className="control">
-              <input
-                className="input"
-                name="price"
-                type="number"
-                defaultValue={data?.price || ""}
-                value={editedData?.price}
-                onChange={handleInput}
-              />
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Quantity</label>
-            <div className="control">
-              <input
-                className="input"
-                name="quantity"
-                type="number"
-                defaultValue={data?.quantity || ""}
-                value={editedData?.quantity}
-                onChange={handleInput}
-              />
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Type</label>
-            <div className="control">
-              <input
-                className="input"
-                name="type"
-                type="text"
-                defaultValue={data?.type || ""}
-                value={editedData?.type}
-                onChange={handleInput}
-              />
-            </div>
-          </div>
+          <Box
+            noValidate
+            component="form"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              m: "auto",
+              width: "fit-content",
+            }}
+          >
+            <Grid
+              container
+              rowSpacing={1}
+              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+            >
+              <Grid item xs={12} md={6}>
+                <TextField
+                  id="code"
+                  label="Code"
+                  name="code"
+                  type="text"
+                  fullWidth
+                  autoFocus
+                  margin="dense"
+                  variant="outlined"
+                  defaultValue={data.code}
+                  onChange={handleInput}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  id="name"
+                  label="Name"
+                  name="name"
+                  type="text"
+                  fullWidth
+                  autoFocus
+                  margin="dense"
+                  variant="outlined"
+                  defaultValue={data.name}
+                  onChange={handleInput}
+                />
+              </Grid>
+              <Grid item xs={3} md={2}>
+                <TextField
+                  id="currency"
+                  name="currency"
+                  margin="dense"
+                  select
+                  fullWidth
+                  variant="outlined"
+                  defaultValue={data.currency}
+                  onChange={handleInput}
+                >
+                  {currencies.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={9} md={10}>
+                <TextField
+                  id="price"
+                  label="Price"
+                  name="price"
+                  type="number"
+                  margin="dense"
+                  autoFocus
+                  fullWidth
+                  variant="outlined"
+                  defaultValue={data.price}
+                  onChange={handleInput}
+                />
+              </Grid>
+              <Grid item xs={12} md={5}>
+                <TextField
+                  id="type"
+                  margin="dense"
+                  label="Type"
+                  name="type"
+                  select
+                  fullWidth
+                  defaultValue={data.type}
+                  onChange={handleInput}
+                >
+                  {types.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={8} md={4}>
+                <TextField
+                  id="quantity"
+                  label="Quantity"
+                  name="quantity"
+                  type="number"
+                  fullWidth
+                  autoFocus
+                  margin="dense"
+                  variant="outlined"
+                  defaultValue={data.quantity}
+                  onChange={handleInput}
+                />
+              </Grid>
+              <Grid item xs={4} md={3}>
+                <TextField
+                  id="unit"
+                  name="unit"
+                  fullWidth
+                  select
+                  margin="dense"
+                  onChange={handleInput}
+                  defaultValue={data.unit}
+                >
+                  {units.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          </Box>
+          
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleAddProduct}>Edit</Button>
-        </DialogActions>
+            <Button variant="outlined" onClick={handleClose}>
+              Cancel
+            </Button>
+            <LoadingButton
+              loading={loading}
+              variant="contained"
+              onClick={(e) => handleSubmit(e)}
+              disabled={isValid}
+            >
+              Submit
+            </LoadingButton>
+          </DialogActions>
       </Dialog>
     </>
   );
@@ -218,6 +256,7 @@ EditProduct.propTypes = {
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
   data: PropTypes.object,
+  editItem: PropTypes.func,
 };
 
 export default EditProduct;

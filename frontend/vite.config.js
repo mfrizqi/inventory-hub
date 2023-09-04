@@ -40,6 +40,9 @@ export default ({ mode }) => {
           ws: true,
         },
       },
+      watch: {
+        usePolling: true
+      }
     },
     define: {
       __APP_ENV__: JSON.stringify(process.env),
