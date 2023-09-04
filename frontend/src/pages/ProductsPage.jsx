@@ -247,7 +247,7 @@ export default function UserPage() {
 
                 {loading ? (
                   <TableBody>
-                    <TableCell align="center" colSpan={6}>
+                    <TableCell align="center" colSpan={6} sx={{py: 6, my:6}}>
                       <CircularProgress size={30} />
                     </TableCell>
                   </TableBody>
@@ -304,7 +304,7 @@ export default function UserPage() {
                     )}
                   </TableBody>
                 )}
-                {isNotFound && (
+                {(isNotFound && !loading) && (
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
@@ -329,7 +329,7 @@ export default function UserPage() {
                   </TableBody>
                 )}
 
-                {product.length == 0 && (
+                {(product.length == 0 && !loading) && (
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
