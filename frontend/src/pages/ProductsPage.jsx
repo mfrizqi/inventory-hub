@@ -19,6 +19,7 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
 // components
 // import Label from "../components/label";
@@ -99,13 +100,17 @@ export default function UserPage() {
 
   const [edit, setEdit] = useState({});
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     console.log("useEffect");
-    // console.log(import.meta.env)
+    console.log(import.meta.env);
+    setLoading(true);
     axios
       .get(import.meta.env.VITE_MOCK_API + "products")
       .then((response) => {
         setProduct(response.data);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -240,58 +245,65 @@ export default function UserPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
 
-                <TableBody>
-                  {product
-                    ?.slice(
-                      page * rowsPerPage,
-                      page * rowsPerPage + rowsPerPage
-                    )
-                    ?.map((row) => {
-                      const { id, code, name, price, type, quantity } = row;
-                      const selectedProduct = selected.indexOf(id) !== -1;
+                {loading ? (
+                  <TableBody>
+                    <TableCell align="center" colSpan={6}>
+                      <CircularProgress size={30} />
+                    </TableCell>
+                  </TableBody>
+                ) : (
+                  <TableBody>
+                    {product
+                      ?.slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      ?.map((row) => {
+                        const { id, code, name, price, type, quantity } = row;
+                        const selectedProduct = selected.indexOf(id) !== -1;
 
-                      return (
-                        <TableRow
-                          hover
-                          key={id}
-                          tabIndex={-1}
-                          role="checkbox"
-                          selected={selectedProduct}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={selectedProduct}
-                              onChange={(event) => handleClick(event, id)}
-                            />
-                          </TableCell>
-                          <TableCell align="left">{code}</TableCell>
-                          <TableCell align="left">{name}</TableCell>
-                          <TableCell align="left">{price}</TableCell>
-                          <TableCell align="left">{quantity}</TableCell>
-                          <TableCell align="left">{type}</TableCell>
+                        return (
+                          <TableRow
+                            hover
+                            key={id}
+                            tabIndex={-1}
+                            role="checkbox"
+                            selected={selectedProduct}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedProduct}
+                                onChange={(event) => handleClick(event, id)}
+                              />
+                            </TableCell>
+                            <TableCell align="left">{code}</TableCell>
+                            <TableCell align="left">{name}</TableCell>
+                            <TableCell align="left">{price}</TableCell>
+                            <TableCell align="left">{quantity}</TableCell>
+                            <TableCell align="left">{type}</TableCell>
 
-                          <TableCell align="right">
-                            <IconButton
-                              size="large"
-                              color="inherit"
-                              onClick={(event) => {
-                                handleOpenMenu(event);
-                                setEdit(row);
-                              }}
-                            >
-                              <Iconify icon={"eva:more-vertical-fill"} />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
-
+                            <TableCell align="right">
+                              <IconButton
+                                size="large"
+                                color="inherit"
+                                onClick={(event) => {
+                                  handleOpenMenu(event);
+                                  setEdit(row);
+                                }}
+                              >
+                                <Iconify icon={"eva:more-vertical-fill"} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    {emptyRows > 0 && (
+                      <TableRow style={{ height: 53 * emptyRows }}>
+                        <TableCell colSpan={6} />
+                      </TableRow>
+                    )}
+                  </TableBody>
+                )}
                 {isNotFound && (
                   <TableBody>
                     <TableRow>
