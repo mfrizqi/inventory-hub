@@ -41,5 +41,8 @@ export default ({ mode }) => {
         },
       },
     },
+    define: {
+      __APP_ENV__: JSON.stringify(process.env),
+    },
   });
 };
