@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { filter } from "lodash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // @mui
 import {
   Card,
@@ -20,6 +20,7 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
 // components
 import Label from "../components/label";
@@ -30,6 +31,7 @@ import UserListToolbar from "../sections/@dashboard/user/UserListToolbar";
 // ----------------------------------------------------------------------
 import SimpleBarReact from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
+import axios from "axios";
 
 const USERLIST = [
   {
@@ -217,6 +219,8 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+
+
 export default function UserPage() {
   const [open, setOpen] = useState();
 
@@ -232,6 +236,16 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [loading, setLoading] = useState(true);
+
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    console.log("useEffect");
+    console.log(import.meta.env);
+    getUsers();
+  }, []);
+
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -245,6 +259,7 @@ export default function UserPage() {
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
+  
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -288,15 +303,38 @@ export default function UserPage() {
   };
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
-  const filteredUsers = applySortFilter(
-    USERLIST,
-    getComparator(order, orderBy),
-    filterName
-  );
+  // const filteredUsers = applySortFilter(
+  //   USERLIST,
+  //   getComparator(order, orderBy),
+  //   filterName
+  // );
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const getUsers = () => {
+    let url = new URL(import.meta.env.VITE_MOCK_API + "users");
+  
+    // Sort Request
+    url.searchParams.append("sortBy", orderBy);
+    url.searchParams.append("order", order); // order parameter is optional and will default to `asc`
+  
+    if (filterName !== "") {
+      url.searchParams.append("name", filterName);
+    }
+    setLoading(true);
+    axios
+      .get(url)
+      .then((response) => {
+        setUsers(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+
+  const isNotFound = !users.length && !!filterName;
 
   return (
     <>
@@ -329,20 +367,27 @@ export default function UserPage() {
             onFilterName={handleFilterByName}
           />
 
-          <SimpleBarReact style={{ maxHeight: 450 }}>
-            <TableContainer sx={{ minWidth: 800, height: 450 }}>
+          <TableContainer sx={{ minWidth: 800, height: 450 }}>
+            <SimpleBarReact style={{ maxHeight: 450 }}>
               <Table>
                 <UserListHead
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={users.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
+                 {loading ? (
+                  <TableBody>
+                    <TableCell align="center" colSpan={6} sx={{ py: 6, my: 6 }}>
+                      <CircularProgress size={30} />
+                    </TableCell>
+                  </TableBody>
+                ) :(
                 <TableBody>
-                  {filteredUsers
+                  {users
                     ?.slice(
                       page * rowsPerPage,
                       page * rowsPerPage + rowsPerPage
@@ -398,7 +443,7 @@ export default function UserPage() {
                           <TableCell align="left">
                             <Label
                               color={
-                                (status === "banned" && "error") || "success"
+                                (status !== "text" && "error") || "success"
                               }
                             >
                               {status}
@@ -423,6 +468,7 @@ export default function UserPage() {
                     </TableRow>
                   )}
                 </TableBody>
+                )}
                 {isNotFound && (
                   <TableBody>
                     <TableRow>
@@ -448,13 +494,13 @@ export default function UserPage() {
                   </TableBody>
                 )}
               </Table>
-            </TableContainer>
-          </SimpleBarReact>
+            </SimpleBarReact>
+          </TableContainer>
 
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={users.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

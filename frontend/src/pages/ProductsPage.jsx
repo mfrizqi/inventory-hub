@@ -54,38 +54,6 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
-// function descendingComparator(a, b, orderBy) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//   return order === "desc"
-//     ? (a, b) => descendingComparator(a, b, orderBy)
-//     : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function applySortFilter(array, comparator, query) {
-//   const stabilizedThis = array.map((el, id) => [el, id]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
-//   if (query) {
-//     return filter(
-//       array,
-//       (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
-//     );
-//   }
-//   return stabilizedThis.map((el) => el[0]);
-// }
-
 export default function UserPage() {
   const [open, setOpen] = useState(null);
 
@@ -93,9 +61,9 @@ export default function UserPage() {
 
   const [order, setOrder] = useState("asc");
 
-  const [selected, setSelected] = useState([]);
+  const [orderBy, setOrderBy] = useState("createdAt");
 
-  const [orderBy, setOrderBy] = useState("name");
+  const [selected, setSelected] = useState([]);
 
   const [filterName, setFilterName] = useState("");
 
@@ -162,12 +130,12 @@ export default function UserPage() {
     if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
       return;
 
-      if (!reason) {
-        showAlert({
-          type: "success",
-          message: "Editing data successful!",
-        });
-      }
+    if (!reason) {
+      showAlert({
+        type: "success",
+        message: "Editing data successful!",
+      });
+    }
     setEditModal(false);
   };
 
@@ -183,6 +151,8 @@ export default function UserPage() {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+
+    getProducts();
   };
 
   const handleSelectAllClick = (event) => {
@@ -195,9 +165,18 @@ export default function UserPage() {
   };
 
   const getProducts = () => {
+    let url = new URL(import.meta.env.VITE_MOCK_API + "products");
+
+    // Sort Request
+    url.searchParams.append("sortBy", orderBy);
+    url.searchParams.append("order", order); // order parameter is optional and will default to `asc`
+
+    if (filterName !== "") {
+      url.searchParams.append("name", filterName);
+    }
     setLoading(true);
     axios
-      .get(import.meta.env.VITE_MOCK_API + "products")
+      .get(url)
       .then((response) => {
         setProduct(response.data);
         setLoading(false);
@@ -238,6 +217,7 @@ export default function UserPage() {
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
+    getProducts();
   };
 
   const handleClickOpen = () => {
@@ -257,9 +237,9 @@ export default function UserPage() {
         setLoadingDelete(false);
         handleCloseDelete();
         showAlert({
-          type:'success',
-          message: "Successfully delete data !"
-        })
+          type: "success",
+          message: "Successfully delete data !",
+        });
         getProducts();
       })
       .catch((err) => {
@@ -274,10 +254,10 @@ export default function UserPage() {
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
-    setAlertState({...alertState, show: false});
+    setAlertState({ ...alertState, show: false });
   };
 
   const emptyRows =
@@ -297,8 +277,17 @@ export default function UserPage() {
         <title> Product | InventoryHub </title>
       </Helmet>
 
-      <Snackbar open={alertState.show} autoHideDuration={4000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-        <Alert onClose={handleCloseSnackbar} severity={alertState.type} sx={{ width: '100%' }}>
+      <Snackbar
+        open={alertState.show}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={alertState.type}
+          sx={{ width: "100%" }}
+        >
           {alertState.message}
         </Alert>
       </Snackbar>

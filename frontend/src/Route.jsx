@@ -29,11 +29,11 @@ import DashboardAppPage from "./pages/DashboardAppPage";
 const Router = () => {
   const routes = useRoutes([
     {
-      path: "/dashboard",
+      path: "/",
       element: <DashboardLayout/>,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: "app", element: <DashboardAppPage /> },
+        { element: <Navigate to="/overview" />, index: true },
+        { path: "overview", element: <DashboardAppPage /> },
         { path: "users", element: <UserPage /> },
         { path: "products", element: <ProductsPage /> },
         // { path: "blog", element: <BlogPage /> },
