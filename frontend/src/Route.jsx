@@ -36,8 +36,8 @@ const Router = () => {
   const { pathname } = useLocation();
 
   const Public = () => {
-    // const account = window.localStorage.getItem("account");
-    // if (!account && pathname === "/") return <Navigate to="/login" replace />;
+    const account = window.localStorage.getItem("account");
+    if (!account && pathname === "/") return <Navigate to="/login" replace />;
     return <Outlet />;
   };
 
