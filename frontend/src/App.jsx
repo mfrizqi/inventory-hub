@@ -11,15 +11,15 @@ import ThemeProvider from "./theme/index.jsx";
 
 function App() {
   return (
-    <HelmetProvider>
-      <BrowserRouter>
-        <ThemeProvider>
-          <ScrollToTop />
-          <StyledChart />
-          <Router />
-        </ThemeProvider>
-      </BrowserRouter>
-    </HelmetProvider>
+    // <HelmetProvider>
+    //   <BrowserRouter>
+    <ThemeProvider>
+      <ScrollToTop />
+      <StyledChart />
+      <Router />
+    </ThemeProvider>
+    //   </BrowserRouter>
+    // </HelmetProvider>
   );
 }
 

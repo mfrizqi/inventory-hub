@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "isomorphic-fetch";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 // @mui
 import { Stack, IconButton, InputAdornment, TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
@@ -19,9 +19,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  // const [token, setToken] = useState();
-  // const [refreshToken, setRefreshToken] = useState();
+  const [loading, setLoading] = useState(false);
 
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -41,48 +39,61 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
     // Perform login logic with username and password values
     if (!username) {
       setErrorMessage("Username is required");
       setErrorModalOpen(true);
+      setLoading(false);
     } else if (!password) {
       setErrorMessage("Password is required");
       setErrorModalOpen(true);
+      setLoading(false);
     } else {
-      const response = await axiosPublic
-        .post("/api/auth/login", {
-          username: username,
-          password: password,
-        })
-        .then((response) => {
-          return response;
-        })
-        .catch((err) => {
-          if (!err?.response?.data?.message) {
-            setErrorMessage("No Server Response");
-            setErrorModalOpen(true);
-          } else if (err.response?.status === 400) {
-            setErrorMessage("Missing Username or Password");
-            setErrorModalOpen(true);
-          } else if (err.response?.status === 401) {
-            setErrorMessage("Unauthorized");
-            setErrorModalOpen(true);
-          } else {
-            setErrorMessage(err?.response?.data?.message);
-            setErrorModalOpen(true);
-          }
-        });
+      setTimeout(() => {
+        if (username === "admin" || username === "user" && password === 'pass') {
+          window.localStorage.setItem("roles", username);
+          navigate("/overview");
+          setUsername("");
+          setPassword("");
+        } else {
+          navigate("/login")
+        }
+      }, 1000);
 
-      console.log(JSON.stringify(response?.data));
+      // const response = await axiosPublic
+      //   .post("/api/auth/login", {
+      //     username: username,
+      //     password: password,
+      //   })
+      //   .then((response) => {
+      //     return response;
+      //   })
+      //   .catch((err) => {
+      //     if (!err?.response?.data?.message) {
+      //       setErrorMessage("No Server Response");
+      //       setErrorModalOpen(true);
+      //     } else if (err.response?.status === 400) {
+      //       setErrorMessage("Missing Username or Password");
+      //       setErrorModalOpen(true);
+      //     } else if (err.response?.status === 401) {
+      //       setErrorMessage("Unauthorized");
+      //       setErrorModalOpen(true);
+      //     } else {
+      //       setErrorMessage(err?.response?.data?.message);
+      //       setErrorModalOpen(true);
+      //     }
+      //   });
+
+      // console.log(JSON.stringify(response?.data));
 
       // const accessToken = response?.data?.accessToken;
       // const isAdmin = response?.data?.isAdmin;
 
       // setAuth({ username, password, isAdmin, accessToken });
-      setUsername("");
-      setPassword("");
 
-      navigate("/dashboard/products");
+      // navigate("/dashboard/products");
     }
   };
 
@@ -130,11 +141,12 @@ export default function LoginForm() {
         </Link> */}
       </Stack>
       <LoadingButton
+        loading={loading}
         fullWidth
         size="large"
         type="submit"
         variant="contained"
-        onClick={handleSubmit}
+        onClick={(e) => handleSubmit(e)}
       >
         Login
       </LoadingButton>

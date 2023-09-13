@@ -3,6 +3,8 @@ import { Helmet } from "react-helmet-async";
 import { styled } from "@mui/material/styles";
 import { LoginForm } from "../sections/auth/login";
 import { Container, Typography } from "@mui/material";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +27,16 @@ const StyledContent = styled("div")(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function LoginPage() {
+
+  const navigate = useNavigate();
+  
+  useEffect(()=>{
+    const account = window.localStorage.getItem('roles');
+    if(account){
+      navigate('/overview');
+    }
+  }, [])
+
   return (
     <>
       <Helmet>

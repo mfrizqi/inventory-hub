@@ -10,16 +10,19 @@ const navConfig = [
     title: 'Overview',
     path: '/overview',
     icon: icon('ic_analytics'),
+    access: 'all'
   },
   {
     title: 'product',
     path: '/products',
     icon: icon('ic_cart'),
+    access: 'all'
   },
   {
     title: 'user',
     path: '/users',
     icon: icon('ic_user'),
+    access: 'admin'
   },
   // {
   //   title: 'blog',

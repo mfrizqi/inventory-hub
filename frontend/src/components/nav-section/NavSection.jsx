@@ -1,9 +1,9 @@
-import PropTypes from 'prop-types';
-import { NavLink as RouterLink } from 'react-router-dom';
+import PropTypes from "prop-types";
+import { NavLink as RouterLink } from "react-router-dom";
 // @mui
-import { Box, List, ListItemText } from '@mui/material';
+import { Box, List, ListItemText } from "@mui/material";
 //
-import { StyledNavItem, StyledNavItemIcon } from './styles';
+import { StyledNavItem, StyledNavItemIcon } from "./styles";
 
 // ----------------------------------------------------------------------
 
@@ -30,25 +30,49 @@ NavItem.propTypes = {
 };
 
 function NavItem({ item }) {
-  const { title, path, icon, info } = item;
+  const { title, path, icon, info, access } = item;
+  const account = window.localStorage.getItem("roles");
 
-  return (
-    <StyledNavItem
-      component={RouterLink}
-      to={path}
-      sx={{
-        '&.active': {
-          color: 'text.primary',
-          bgcolor: 'action.selected',
-          fontWeight: 'fontWeightBold',
-        },
-      }}
-    >
-      <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+  if (access === "all") {
+    return (
+      <StyledNavItem
+        component={RouterLink}
+        to={path}
+        sx={{
+          "&.active": {
+            color: "text.primary",
+            bgcolor: "action.selected",
+            fontWeight: "fontWeightBold",
+          },
+        }}
+      >
+        <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
 
-      <ListItemText disableTypography primary={title} />
+        <ListItemText disableTypography primary={title} />
 
-      {info && info}
-    </StyledNavItem>
-  );
+        {info && info}
+      </StyledNavItem>
+    );
+  }
+
+  if (access === "admin" && account === "admin")
+    return (
+      <StyledNavItem
+        component={RouterLink}
+        to={path}
+        sx={{
+          "&.active": {
+            color: "text.primary",
+            bgcolor: "action.selected",
+            fontWeight: "fontWeightBold",
+          },
+        }}
+      >
+        <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+
+        <ListItemText disableTypography primary={title} />
+
+        {info && info}
+      </StyledNavItem>
+    );
 }
