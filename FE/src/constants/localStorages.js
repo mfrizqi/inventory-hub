@@ -1,0 +1,1 @@
+// Requires for local storages global naming
