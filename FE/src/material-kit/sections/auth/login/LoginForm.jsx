@@ -12,20 +12,48 @@ export default function LoginForm() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleClick = () => {
-    navigate('/dashboard', { replace: true });
+  const handleUsernameChange = (event) => {
+    setUsername(event.target.value);
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      if (username === "admin" || username === "user" && password === 'pass') {
+        window.localStorage.setItem("roles", username);
+        navigate("/overview");
+        setUsername("");
+        setPassword("");
+      } else {
+        navigate("/login")
+      }
+    }, 1000);
   };
 
   return (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField  name="username"
+          label="Username"
+          value={username}
+          onChange={handleUsernameChange}/>
 
         <TextField
           name="password"
           label="Password"
           type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={handlePasswordChange}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -45,7 +73,12 @@ export default function LoginForm() {
         </Link>
       </Stack>
 
-      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+      <LoadingButton loading={loading}
+        fullWidth
+        size="large"
+        type="submit"
+        variant="contained"
+        onClick={(e) => handleSubmit(e)}>
         Login
       </LoadingButton>
     </>
