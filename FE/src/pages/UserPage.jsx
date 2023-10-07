@@ -1,5 +1,4 @@
 import { Helmet } from "react-helmet-async";
-import { filter } from "lodash";
 import { useEffect, useState } from "react";
 // @mui
 import {
@@ -28,6 +27,9 @@ import Iconify from "../material-kit/components/iconify/Iconify";
 // sections
 import UserListHead from "../material-kit/sections/@dashboard/user/UserListHead";
 import UserListToolbar from "../material-kit/sections/@dashboard/user/UserListToolbar";
+// ----------------------------------------------------------------------
+import AddModal from "../components/modal/users/Add";
+import EditModal from "../components/modal/users/Edit";
 // ----------------------------------------------------------------------
 import SimpleBarReact from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
@@ -187,40 +189,6 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function applySortFilter(array, comparator, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(
-      array,
-      (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
-    );
-  }
-  return stabilizedThis.map((el) => el[0]);
-}
-
-
-
 export default function UserPage() {
   const [open, setOpen] = useState();
 
@@ -240,11 +208,33 @@ export default function UserPage() {
 
   const [users, setUsers] = useState([]);
 
+  const [showModal, setShowModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+
   useEffect(() => {
     console.log("useEffect");
     console.log(import.meta.env);
     getUsers();
   }, []);
+
+  const handleClickOpen = () => {
+    setShowModal(!showModal);
+  };
+
+  const handleCloseModal = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+    if (!reason) {
+      // showAlert({
+      //   type: "success",
+      //   message: "Adding data successful!",
+      // });
+    }
+    setShowModal(false);
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -354,6 +344,7 @@ export default function UserPage() {
           </Typography>
           <Button
             variant="contained"
+            onClick={handleClickOpen}
             startIcon={<Iconify icon="eva:plus-fill" />}
           >
             New User
@@ -508,6 +499,13 @@ export default function UserPage() {
           />
         </Card>
       </Container>
+
+       {/* Modal */}
+       <AddModal
+        isOpen={showModal}
+        onClose={(event, reason) => handleCloseModal(event, reason)}
+        // addItem={() => getProducts()}
+      />
 
       <Popover
         open={Boolean(open)}

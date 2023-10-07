@@ -36,6 +36,25 @@ export const units = [
   }
 ]
 
+export const roles = [
+  {
+    value: "management",
+    label: "Management",
+  },
+  {
+    value: "supervisor",
+    label: "Supervisor",
+  },
+  {
+    value: "lead_staff",
+    label: "Lead staff",
+  },
+  {
+    value: "staff",
+    label: "Staff",
+  }
+]
+
 export const currencies = [
   {
     value: "IDR",
