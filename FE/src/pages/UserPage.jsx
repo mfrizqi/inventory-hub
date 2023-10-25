@@ -20,6 +20,12 @@ import {
   TableContainer,
   TablePagination,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  Box,
+  DialogActions,
 } from "@mui/material";
 // components
 import Label from "../material-kit/components/label";
@@ -34,6 +40,7 @@ import EditModal from "../components/modal/users/Edit";
 import SimpleBarReact from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import axios from "axios";
+import { LoadingButton } from "@mui/lab";
 
 const USERLIST = [
   {
@@ -205,8 +212,10 @@ export default function UserPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [loading, setLoading] = useState(true);
+  const [loadingDelete, setLoadingDelete] = useState(false);
 
   const [users, setUsers] = useState([]);
+  const [edit, setEdit] = useState({});
 
   const [showModal, setShowModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
@@ -249,7 +258,6 @@ export default function UserPage() {
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
-  
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -303,11 +311,11 @@ export default function UserPage() {
 
   const getUsers = () => {
     let url = new URL(import.meta.env.VITE_MOCK_API + "users");
-  
+
     // Sort Request
     url.searchParams.append("sortBy", orderBy);
     url.searchParams.append("order", order); // order parameter is optional and will default to `asc`
-  
+
     if (filterName !== "") {
       url.searchParams.append("name", filterName);
     }
@@ -322,6 +330,58 @@ export default function UserPage() {
         console.log(err);
         setLoading(false);
       });
+  };
+
+  const handleEdit = () => {
+    setEditModal(!editModal);
+    setOpen(null);
+  };
+
+  const handleCloseEdit = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+
+    if (!reason) {
+      // showAlert({
+      //   type: "success",
+      //   message: "Editing data successful!",
+      // });
+    }
+    setEditModal(false);
+  };
+
+  const handleCloseDelete = (event, reason) => {
+    console.log(event);
+    console.log(reason);
+    if ((reason && reason === "backdropClick") || reason === "escapeKeyDown")
+      return;
+    setDeleteModal(false);
+  };
+
+  const submitDelete = () => {
+    setLoadingDelete(true);
+    axios
+      .delete(import.meta.env.VITE_MOCK_API + "users/" + edit?.id)
+      .then(() => {
+        setLoadingDelete(false);
+        handleCloseDelete();
+        // showAlert({
+        //   type: "success",
+        //   message: "Successfully delete data !",
+        // });
+        getUsers();
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoadingDelete(false);
+      });
+  };
+
+  const handleOpenDelete = () => {
+    handleOpenMenu(false);
+    setDeleteModal(true);
   };
 
   const isNotFound = !users.length && !!filterName;
@@ -342,13 +402,16 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             User
           </Typography>
-          <Button
-            variant="contained"
-            onClick={handleClickOpen}
-            startIcon={<Iconify icon="eva:plus-fill" />}
-          >
-            New User
-          </Button>
+
+          {users.length != 0 && (
+            <Button
+              variant="contained"
+              onClick={handleClickOpen}
+              startIcon={<Iconify icon="eva:plus-fill" />}
+            >
+              New User
+            </Button>
+          )}
         </Stack>
 
         <Card>
@@ -370,95 +433,102 @@ export default function UserPage() {
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
-                 {loading ? (
+                {loading ? (
                   <TableBody>
                     <TableCell align="center" colSpan={6} sx={{ py: 6, my: 6 }}>
                       <CircularProgress size={30} />
                     </TableCell>
                   </TableBody>
-                ) :(
-                <TableBody>
-                  {users
-                    ?.slice(
-                      page * rowsPerPage,
-                      page * rowsPerPage + rowsPerPage
-                    )
-                    ?.map((row) => {
-                      const {
-                        id,
-                        name,
-                        role,
-                        status,
-                        company,
-                        avatarUrl,
-                        isVerified,
-                      } = row;
-                      const selectedUser = selected.indexOf(name) !== -1;
+                ) : (
+                  <TableBody>
+                    {users
+                      ?.slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      ?.map((row) => {
+                        const {
+                          id,
+                          name,
+                          role,
+                          status,
+                          company,
+                          avatarUrl,
+                          isVerified,
+                        } = row;
+                        const selectedUser = selected.indexOf(name) !== -1;
 
-                      return (
-                        <TableRow
-                          hover
-                          key={id}
-                          tabIndex={-1}
-                          role="checkbox"
-                          selected={selectedUser}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={selectedUser}
-                              onChange={(event) => handleClick(event, name)}
-                            />
-                          </TableCell>
+                        return (
+                          <TableRow
+                            hover
+                            key={id}
+                            tabIndex={-1}
+                            role="checkbox"
+                            selected={selectedUser}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedUser}
+                                onChange={(event) => handleClick(event, name)}
+                              />
+                            </TableCell>
 
-                          <TableCell component="th" scope="row" padding="none">
-                            <Stack
-                              direction="row"
-                              alignItems="center"
-                              spacing={2}
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              padding="none"
                             >
-                              <Avatar alt={name} src={avatarUrl} />
-                              <Typography variant="subtitle2" noWrap>
-                                {name}
-                              </Typography>
-                            </Stack>
-                          </TableCell>
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                spacing={2}
+                              >
+                                <Avatar alt={name} src={avatarUrl} />
+                                <Typography variant="subtitle2" noWrap>
+                                  {name}
+                                </Typography>
+                              </Stack>
+                            </TableCell>
 
-                          <TableCell align="left">{company}</TableCell>
+                            <TableCell align="left">{company}</TableCell>
 
-                          <TableCell align="left">{role}</TableCell>
+                            <TableCell align="left">{role}</TableCell>
 
-                          <TableCell align="left">
-                            {isVerified ? "Yes" : "No"}
-                          </TableCell>
+                            <TableCell align="left">
+                              {isVerified ? "Yes" : "No"}
+                            </TableCell>
 
-                          <TableCell align="left">
-                            <Label
-                              color={
-                                (status !== "text" && "error") || "success"
-                              }
-                            >
-                              {status}
-                            </Label>
-                          </TableCell>
+                            <TableCell align="left">
+                              <Label
+                                color={
+                                  (status.length < 6 && "error") || "success"
+                                }
+                              >
+                                {status}
+                              </Label>
+                            </TableCell>
 
-                          <TableCell align="right">
-                            <IconButton
-                              size="large"
-                              color="inherit"
-                              onClick={handleOpenMenu}
-                            >
-                              <Iconify icon={"eva:more-vertical-fill"} />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
+                            <TableCell align="right">
+                              <IconButton
+                                size="large"
+                                color="inherit"
+                                onClick={(event) => {
+                                  handleOpenMenu(event);
+                                  setEdit(row);
+                                }}
+                              >
+                                <Iconify icon={"eva:more-vertical-fill"} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    {emptyRows > 0 && (
+                      <TableRow style={{ height: 53 * emptyRows }}>
+                        <TableCell colSpan={6} />
+                      </TableRow>
+                    )}
+                  </TableBody>
                 )}
                 {isNotFound && (
                   <TableBody>
@@ -500,11 +570,18 @@ export default function UserPage() {
         </Card>
       </Container>
 
-       {/* Modal */}
-       <AddModal
+      {/* Modal */}
+      <AddModal
         isOpen={showModal}
         onClose={(event, reason) => handleCloseModal(event, reason)}
-        // addItem={() => getProducts()}
+        addItem={() => getUsers()}
+      />
+
+      <EditModal
+        isOpen={editModal}
+        onClose={(event, reason) => handleCloseEdit(event, reason)}
+        data={edit}
+        editItem={() => getUsers()}
       />
 
       <Popover
@@ -525,16 +602,49 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={handleEdit}>
           <Iconify icon={"eva:edit-fill"} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: "error.main" }}>
+        <MenuItem sx={{ color: "error.main" }} onClick={handleOpenDelete}>
           <Iconify icon={"eva:trash-2-outline"} sx={{ mr: 2 }} />
           Delete
         </MenuItem>
       </Popover>
+
+      <Dialog
+        open={deleteModal}
+        onClose={(event, reason) => handleCloseDelete(event, reason)}
+        maxWidth="xs"
+        fullWidth
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Product"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You want to delete <b>{edit?.name}</b> <br />
+            This action is{" "}
+            <Box component="span" sx={{ color: "error.main" }}>
+              irreversible
+            </Box>
+            .
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <LoadingButton
+            loading={loadingDelete}
+            variant="contained"
+            color="error"
+            onClick={() => submitDelete()}
+            autoFocus
+          >
+            Delete
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

@@ -164,16 +164,17 @@ export default function UserPage() {
     setSelected([]);
   };
 
-  const getProducts = () => {
+  const getProducts = (search = '') => {
     let url = new URL(import.meta.env.VITE_MOCK_API + "products");
 
     // Sort Request
     url.searchParams.append("sortBy", orderBy);
     url.searchParams.append("order", order); // order parameter is optional and will default to `asc`
 
-    if (filterName !== "") {
-      url.searchParams.append("name", filterName);
+    if (search !== "") {
+      url.searchParams.append("name", search);
     }
+    console.log('url: ', url)
     setLoading(true);
     axios
       .get(url)
@@ -217,7 +218,7 @@ export default function UserPage() {
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
-    getProducts();
+    getProducts(event.target.value);
   };
 
   const handleClickOpen = () => {
@@ -235,6 +236,7 @@ export default function UserPage() {
       .delete(import.meta.env.VITE_MOCK_API + "products/" + edit?.id)
       .then(() => {
         setLoadingDelete(false);
+        setFilterName("");
         handleCloseDelete();
         showAlert({
           type: "success",

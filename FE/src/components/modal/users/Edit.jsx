@@ -5,21 +5,19 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Box,
-  Grid,
   TextField,
+  Grid,
   MenuItem,
-  // TextField,
+  Box,
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-import { currencies, types, units } from "../../../constants";
+import "./Edit.css";
 import { LoadingButton } from "@mui/lab";
 
-const EditProduct = ({ isOpen, onClose, data, editItem }) => {
-  const [fullWidth] = useState(true);
-  const [maxWidth] = useState("sm");
+import { roles } from "../../../constants";
 
+const EditModal = ({ isOpen, onClose, data, editItem }) => {
   const [loading, setLoading] = useState(false);
   const [editedData, setEditedData] = useState(data);
 
@@ -29,13 +27,14 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
 
   const handleInput = (e) => {
     const { name, value } = e.target;
-    console.log(e.target.name);
-    console.log(e.target.value);
-    console.log(name, value);
+    // console.log(e.target.name);
+    // console.log(e.target.value);
+    // console.log(name, value);
     setEditedData((data) => ({
       ...data,
       [name]: value,
     }));
+    console.log(editedData)
   };
 
   const handleSubmit = (e) => {
@@ -44,17 +43,13 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
     onSubmit(editedData);
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   const onSubmit = async (data) => {
     console.log(data);
     setLoading(true);
     try {
-      // Make the API request to send the product data
+      // Make the API request to send the user data
       const response = await fetch(
-        import.meta.env.VITE_MOCK_API + "/products/" + data?.id,
+        import.meta.env.VITE_MOCK_API + "/users/" + data?.id,
         {
           method: "PUT",
           headers: {
@@ -83,28 +78,47 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
     }
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   const handleClose = (event, reason) => {
+    setEditedData(null);
     onClose(event, reason);
   };
 
   const validation = (text) => text.length < 1;
 
-  const isValid =
-    validation(editedData.code) ||
-    validation(editedData.name) ||
-    validation(editedData.price) ||
-    validation(editedData.type) ||
-    validation(editedData.quantity);
+  const isValid = false;
+    // validation(editedData.name) ||
+    // validation(editedData.role) ||
+    // validation(editedData.email) ||
+    // validation(editedData.company);
+
+  console.log({ isValid });
+  console.log({data})
+  console.log({editedData})
+
+  // const handleCheckEmail = (email) => {
+  //   const re =
+  //     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  //   if (re.test(email)) {
+  //     // setEmailInvalid(false);
+  //   } else {
+  //     // setEmailInvalid(true);
+  //   }
+  // };
 
   return (
     <>
       <Dialog
         open={isOpen}
         onClose={handleClose}
-        fullWidth={fullWidth}
-        maxWidth={maxWidth}
+        fullWidth={true}
+        // maxWidth={maxWidth}
       >
-        <DialogTitle>Edit Product</DialogTitle>
+        <DialogTitle>Edit User</DialogTitle>
         <DialogContent>
           <Box
             noValidate
@@ -121,109 +135,57 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
               rowSpacing={1}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  id="code"
-                  label="Code"
-                  name="code"
-                  type="text"
-                  fullWidth
-                  autoFocus
                   margin="dense"
-                  variant="outlined"
-                  defaultValue={data.code}
-                  onChange={handleInput}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
                   id="name"
                   label="Name"
                   name="name"
                   type="text"
                   fullWidth
-                  autoFocus
-                  margin="dense"
                   variant="outlined"
                   defaultValue={data.name}
                   onChange={handleInput}
                 />
               </Grid>
-              <Grid item xs={3} md={2}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  id="currency"
-                  name="currency"
                   margin="dense"
-                  select
+                  id="email"
+                  label="Email"
+                  name="email"
+                  type="text"
                   fullWidth
                   variant="outlined"
-                  defaultValue={data.currency}
-                  onChange={handleInput}
-                >
-                  {currencies.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={9} md={10}>
-                <TextField
-                  id="price"
-                  label="Price"
-                  name="price"
-                  type="number"
-                  margin="dense"
-                  autoFocus
-                  fullWidth
-                  variant="outlined"
-                  defaultValue={data.price}
+                  defaultValue={data.email}
                   onChange={handleInput}
                 />
               </Grid>
-              <Grid item xs={12} md={5}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  id="type"
                   margin="dense"
-                  label="Type"
-                  name="type"
-                  select
+                  id="company"
+                  label="Company"
+                  name="company"
+                  type="text"
                   fullWidth
-                  defaultValue={data.type}
-                  onChange={handleInput}
-                >
-                  {types.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={8} md={4}>
-                <TextField
-                  id="quantity"
-                  label="Quantity"
-                  name="quantity"
-                  type="number"
-                  fullWidth
-                  autoFocus
-                  margin="dense"
                   variant="outlined"
-                  defaultValue={data.quantity}
+                  defaultValue={data.company}
                   onChange={handleInput}
                 />
               </Grid>
-              <Grid item xs={4} md={3}>
+              <Grid item xs={4} md={12}>
                 <TextField
-                  id="unit"
-                  name="unit"
-                  fullWidth
+                  id="role"
+                  name="role"
                   select
+                  label="Role"
                   margin="dense"
+                  fullWidth
+                  defaultValue={data.role}
                   onChange={handleInput}
-                  defaultValue={data.unit}
                 >
-                  {units.map((option) => (
+                  {roles.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
                     </MenuItem>
@@ -232,9 +194,7 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
               </Grid>
             </Grid>
           </Box>
-          
-        </DialogContent>
-        <DialogActions>
+          <DialogActions>
             <Button variant="outlined" onClick={handleClose}>
               Cancel
             </Button>
@@ -247,16 +207,17 @@ const EditProduct = ({ isOpen, onClose, data, editItem }) => {
               Submit
             </LoadingButton>
           </DialogActions>
+        </DialogContent>
       </Dialog>
     </>
   );
 };
 
-EditProduct.propTypes = {
+EditModal.propTypes = {
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
   data: PropTypes.object,
   editItem: PropTypes.func,
 };
 
-export default EditProduct;
+export default EditModal;

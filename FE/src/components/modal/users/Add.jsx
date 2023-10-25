@@ -15,29 +15,23 @@ import PropTypes from "prop-types";
 import "./Add.css";
 import { LoadingButton } from "@mui/lab";
 
-import {currencies, types, roles} from '../../../constants'
+import { roles } from "../../../constants";
 
-const AddModal = ({ isOpen, onClose, addItem}) => {
-
+const AddModal = ({ isOpen, onClose, addItem }) => {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
-  // const [currency, setCurrency] = useState("IDR");
-  const [price, setPrice] = useState("");
-  const [type, setType] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState("pcs");
+  const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleAddProduct = () => {
+  const handleAdd = () => {
     const newProduct = {
-      code: company,
+      company: company,
       name: name,
       email: email,
-      price: parseInt(price),
-      type: type,
-      quantity: parseInt(quantity),
-      unit: unit,
+      role: role,
+      is_verified: true,
+      status: "Banned"
     };
 
     onSubmit(newProduct);
@@ -45,15 +39,13 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
     // Reset the form inputs
     setCompany("");
     setName("");
-    setPrice("");
-    setType("");
-    setQuantity("");
+    setRole("");
   };
 
   const onSubmit = async (data) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch(import.meta.env.VITE_MOCK_API + "products", {
+      const response = await fetch(import.meta.env.VITE_MOCK_API + "users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +67,7 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
       addItem(false);
       alert("Error sending product data:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -91,13 +83,23 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
   const validation = (text) => text.length < 1;
 
   const isValid =
-    validation(company) ||
     validation(name) ||
-    validation(price) ||
-    validation(type) ||
-    validation(quantity);
+    validation(role) ||
+    validation(email) ||
+    validation(company);
 
   console.log({ isValid });
+
+  // const handleCheckEmail = (email) => {
+  //   const re =
+  //     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  //   if (re.test(email)) {
+  //     // setEmailInvalid(false);
+  //   } else {
+  //     // setEmailInvalid(true);
+  //   }
+  // };
 
   return (
     <>
@@ -124,9 +126,8 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
               rowSpacing={1}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="name"
                   label="Name"
@@ -138,9 +139,8 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="email"
                   label="Email"
@@ -152,9 +152,8 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="company"
                   label="Company"
@@ -166,15 +165,16 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
                   }}
                 />
               </Grid>
-              <Grid item xs={4} md={6}>
+              <Grid item xs={4} md={12}>
                 <TextField
                   id="roles"
                   select
-                  value={unit}
+                  defaultValue=""
+                  label="Role"
                   margin="dense"
                   fullWidth
                   onChange={(e) => {
-                    setUnit(e.target.value);
+                    setRole(e.target.value);
                   }}
                 >
                   {roles.map((option) => (
@@ -184,89 +184,6 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
                   ))}
                 </TextField>
               </Grid>
-              {/* <Grid item xs={3} md={2}>
-                <TextField
-                  id="currency"
-                  select
-                  value={currency}
-                  margin="dense"
-                  fullWidth
-                  onChange={(e) => {
-                    setCurrency(e.target.value);
-                  }}
-                >
-                  {currencies.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={9} md={10}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  id="price"
-                  label="Price"
-                  type="number"
-                  fullWidth
-                  variant="outlined"
-                  onChange={(e) => {
-                    setPrice(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} md={5}>
-                <TextField
-                  id="type"
-                  select
-                  defaultValue=""
-                  margin="dense"
-                  label="Type"
-                  fullWidth
-                  onChange={(e) => {
-                    setType(e.target.value);
-                  }}
-                >
-                  {types.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={8} md={4}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  id="quantity"
-                  label="Quantity"
-                  type="number"
-                  fullWidth
-                  variant="outlined"
-                  onChange={(e) => {
-                    setQuantity(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={4} md={3}>
-                <TextField
-                  id="unit"
-                  select
-                  value={unit}
-                  margin="dense"
-                  fullWidth
-                  onChange={(e) => {
-                    setUnit(e.target.value);
-                  }}
-                >
-                  {units.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid> */}
             </Grid>
           </Box>
           <DialogActions>
@@ -276,7 +193,7 @@ const AddModal = ({ isOpen, onClose, addItem}) => {
             <LoadingButton
               loading={loading}
               variant="contained"
-              onClick={() => handleAddProduct()}
+              onClick={() => handleAdd()}
               disabled={isValid}
             >
               Submit
@@ -292,7 +209,6 @@ AddModal.propTypes = {
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
   addItem: PropTypes.func,
-  currencies: PropTypes.array
 };
 
 export default AddModal;

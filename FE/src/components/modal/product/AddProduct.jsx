@@ -124,7 +124,6 @@ const AddProductModal = ({ isOpen, onClose, addItem}) => {
             >
               <Grid item xs={12} md={6}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="code"
                   label="Code"
@@ -138,7 +137,6 @@ const AddProductModal = ({ isOpen, onClose, addItem}) => {
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="name"
                   label="Name"
@@ -170,7 +168,6 @@ const AddProductModal = ({ isOpen, onClose, addItem}) => {
               </Grid>
               <Grid item xs={9} md={10}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="price"
                   label="Price"
@@ -203,7 +200,6 @@ const AddProductModal = ({ isOpen, onClose, addItem}) => {
               </Grid>
               <Grid item xs={8} md={4}>
                 <TextField
-                  autoFocus
                   margin="dense"
                   id="quantity"
                   label="Quantity"
