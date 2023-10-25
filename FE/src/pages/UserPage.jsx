@@ -298,6 +298,7 @@ export default function UserPage() {
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
+    getUsers(event.target.value);
   };
 
   const emptyRows =
@@ -309,15 +310,15 @@ export default function UserPage() {
   //   filterName
   // );
 
-  const getUsers = () => {
+  const getUsers = (search = '') => {
     let url = new URL(import.meta.env.VITE_MOCK_API + "users");
 
     // Sort Request
     url.searchParams.append("sortBy", orderBy);
     url.searchParams.append("order", order); // order parameter is optional and will default to `asc`
 
-    if (filterName !== "") {
-      url.searchParams.append("name", filterName);
+    if (search !== "") {
+      url.searchParams.append("name", search);
     }
     setLoading(true);
     axios
@@ -365,6 +366,7 @@ export default function UserPage() {
     axios
       .delete(import.meta.env.VITE_MOCK_API + "users/" + edit?.id)
       .then(() => {
+        setFilterName("");
         setLoadingDelete(false);
         handleCloseDelete();
         // showAlert({
@@ -382,6 +384,16 @@ export default function UserPage() {
   const handleOpenDelete = () => {
     handleOpenMenu(false);
     setDeleteModal(true);
+  };
+
+  const capitalize = (str) => {
+    const capsSplit = str.split("_");
+
+    for (let i = 0; i < capsSplit.length; i++) {
+      capsSplit[i] = capsSplit[i][0].toUpperCase() + capsSplit[i].substr(1) + ' ';
+    }
+    capsSplit.join(" ");
+    return capsSplit;
   };
 
   const isNotFound = !users.length && !!filterName;
@@ -492,7 +504,9 @@ export default function UserPage() {
 
                             <TableCell align="left">{company}</TableCell>
 
-                            <TableCell align="left">{role}</TableCell>
+                            <TableCell align="left">
+                              {capitalize(role)}
+                            </TableCell>
 
                             <TableCell align="left">
                               {isVerified ? "Yes" : "No"}
